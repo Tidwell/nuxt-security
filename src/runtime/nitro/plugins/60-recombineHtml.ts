@@ -3,7 +3,9 @@ import { resolveSecurityRules } from '../context'
 import { headerStringFromObject, getNameFromKey } from '../../../utils/headers'
 
 import type {
+  ContentSecurityPolicyValue,
   OptionKey,
+  SecurityHeaders,
 } from '../../../types/headers'
 import type { RenderResponse } from 'nitropack'
 
@@ -62,10 +64,10 @@ export default defineNitroPlugin((nitroApp) => {
 
     if (rules.ssg && rules.ssg.meta && rules.headers && (rules.headers.contentSecurityPolicy || rules.headers.contentSecurityPolicyReportOnly)) {
      
-      const keys = ['contentSecurityPolicy', 'contentSecurityPolicyReportOnly'] as OptionKey[]
-      keys.forEach((policyKey) => {
-        if (rules.headers?.[policyKey]) {
-          const csp = structuredClone(rules.headers[policyKey])
+      const headerRules = [['contentSecurityPolicy', rules.headers.contentSecurityPolicy], ['contentSecurityPolicyReportOnly', rules.headers.contentSecurityPolicyReportOnly]] as [OptionKey, SecurityHeaders][]
+      headerRules.forEach(([policyKey, header]) => {
+        if (header) {
+          const csp = structuredClone(header) as ContentSecurityPolicyValue
           csp['frame-ancestors'] = false
           const headerValue = headerStringFromObject(policyKey, csp)
 
