@@ -29,7 +29,7 @@ export default defineNitroPlugin((nitroApp) => {
   nitroApp.hooks.hook('render:response', async(response, { event }) => {
     // Exit if no CSP defined
     const rules = resolveSecurityRules(event)
-    if (!rules.enabled || !rules.headers || !rules.headers.contentSecurityPolicy) {
+    if (!rules.enabled || !rules.headers || !(rules.headers.contentSecurityPolicy || rules.headers.contentSecurityPolicyReportOnly)) {
       return
     }
 

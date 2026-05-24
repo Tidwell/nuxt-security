@@ -1,10 +1,44 @@
 import { defineNitroPlugin } from 'nitropack/runtime'
 import { resolveSecurityRules } from '../context'
-import { headerStringFromObject } from '../../../utils/headers'
+import { headerStringFromObject, getNameFromKey } from '../../../utils/headers'
+
+import type {
+  OptionKey,
+} from '../../../types/headers'
+import type { RenderResponse } from 'nitropack'
 
 const META_CSP_RE = /<meta\s+http-equiv=["']Content-Security-Policy["'][^>]*>/i
 const HEAD_CHARSET_RE = /<meta\s+charset=["'][^"']*["'][^>]*>/i
 const HEAD_OPEN_RE = /<head\b[^>]*>/i
+
+function applyCspToResponseBody(response: Partial<RenderResponse>, headerValue: string, httpEquiv: string) {
+    const body = response.body
+  if (typeof body !== 'string' || !body) {
+    return
+  }
+
+  const metaTag = `<meta http-equiv="${httpEquiv}" content="${headerValue}">`
+
+  // If a previous run already inserted a CSP meta tag, replace it so hashes stay fresh.
+  if (META_CSP_RE.test(body)) {
+    response.body = body.replace(META_CSP_RE, metaTag)
+    return
+  }
+
+  // Insert just after the charset meta tag when available, otherwise right after <head>.
+  const charsetMatch = HEAD_CHARSET_RE.exec(body)
+  if (charsetMatch) {
+    const insertAt = charsetMatch.index + charsetMatch[0].length
+    response.body = body.slice(0, insertAt) + metaTag + body.slice(insertAt)
+    return
+  }
+
+  const headMatch = HEAD_OPEN_RE.exec(body)
+  if (headMatch) {
+    const insertAt = headMatch.index + headMatch[0].length
+    response.body = body.slice(0, insertAt) + metaTag + body.slice(insertAt)
+  }
+}
 
 /**
  * This plugin adds the Content-Security-Policy header to the HTML meta tag in SSG mode.
@@ -26,36 +60,18 @@ export default defineNitroPlugin((nitroApp) => {
       return
     }
 
-    if (rules.ssg && rules.ssg.meta && rules.headers && rules.headers.contentSecurityPolicy) {
-      const body = response.body
-      if (typeof body !== 'string' || !body) {
-        return
-      }
+    if (rules.ssg && rules.ssg.meta && rules.headers && (rules.headers.contentSecurityPolicy || rules.headers.contentSecurityPolicyReportOnly)) {
+     
+      const keys = ['contentSecurityPolicy', 'contentSecurityPolicyReportOnly'] as OptionKey[];
+      keys.forEach((policyKey) => {
+        if (rules.headers?.[policyKey]) {
+          const csp = structuredClone(rules.headers[policyKey])
+          csp['frame-ancestors'] = false
+          const headerValue = headerStringFromObject(policyKey, csp)
 
-      const csp = structuredClone(rules.headers.contentSecurityPolicy)
-      csp['frame-ancestors'] = false
-      const headerValue = headerStringFromObject('contentSecurityPolicy', csp)
-      const metaTag = `<meta http-equiv="Content-Security-Policy" content="${headerValue}">`
-
-      // If a previous run already inserted a CSP meta tag, replace it so hashes stay fresh.
-      if (META_CSP_RE.test(body)) {
-        response.body = body.replace(META_CSP_RE, metaTag)
-        return
-      }
-
-      // Insert just after the charset meta tag when available, otherwise right after <head>.
-      const charsetMatch = HEAD_CHARSET_RE.exec(body)
-      if (charsetMatch) {
-        const insertAt = charsetMatch.index + charsetMatch[0].length
-        response.body = body.slice(0, insertAt) + metaTag + body.slice(insertAt)
-        return
-      }
-
-      const headMatch = HEAD_OPEN_RE.exec(body)
-      if (headMatch) {
-        const insertAt = headMatch.index + headMatch[0].length
-        response.body = body.slice(0, insertAt) + metaTag + body.slice(insertAt)
-      }
+          applyCspToResponseBody(response, headerValue, getNameFromKey(policyKey));
+        }
+      })
     }
   })
 })

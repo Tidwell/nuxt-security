@@ -22,6 +22,7 @@ export const defaultSecurityConfig = (serverlUrl: string, strict: boolean) => {
         'script-src': ["'self'", 'https:', "'unsafe-inline'", "'strict-dynamic'", "'nonce-{{nonce}}'"],
         'upgrade-insecure-requests': true
       },
+      contentSecurityPolicyReportOnly: false,
       originAgentCluster: '?1',
       referrerPolicy: 'no-referrer',
       strictTransportSecurity: {

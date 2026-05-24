@@ -59,6 +59,15 @@ export default defineNuxtConfig({
       security: {
         contentSecurityPolicyReportOnly: true
       }
+    },
+    '/cspSimultaniousReportOnly': {
+      security: {
+        headers: {
+          contentSecurityPolicyReportOnly:  {
+            'frame-ancestors': ['https://www.example.com'],
+          }
+        }
+      }
     }
   },
 
