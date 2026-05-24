@@ -12,7 +12,7 @@ const HEAD_CHARSET_RE = /<meta\s+charset=["'][^"']*["'][^>]*>/i
 const HEAD_OPEN_RE = /<head\b[^>]*>/i
 
 function applyCspToResponseBody(response: Partial<RenderResponse>, headerValue: string, httpEquiv: string) {
-    const body = response.body
+  const body = response.body
   if (typeof body !== 'string' || !body) {
     return
   }
@@ -62,14 +62,14 @@ export default defineNitroPlugin((nitroApp) => {
 
     if (rules.ssg && rules.ssg.meta && rules.headers && (rules.headers.contentSecurityPolicy || rules.headers.contentSecurityPolicyReportOnly)) {
      
-      const keys = ['contentSecurityPolicy', 'contentSecurityPolicyReportOnly'] as OptionKey[];
+      const keys = ['contentSecurityPolicy', 'contentSecurityPolicyReportOnly'] as OptionKey[]
       keys.forEach((policyKey) => {
         if (rules.headers?.[policyKey]) {
           const csp = structuredClone(rules.headers[policyKey])
           csp['frame-ancestors'] = false
           const headerValue = headerStringFromObject(policyKey, csp)
 
-          applyCspToResponseBody(response, headerValue, getNameFromKey(policyKey));
+          applyCspToResponseBody(response, headerValue, getNameFromKey(policyKey))
         }
       })
     }
