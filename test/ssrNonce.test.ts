@@ -134,4 +134,20 @@ describe('[nuxt-security] Nonce', async () => {
     expect(nonce).toBeDefined()
     expect(text).toMatch(`<span id="server-nonce">${nonce}</span>`)
   })
+
+  it('injects `nonce` attribute in response for report-only', async () => {
+    const res = await fetch('/')
+
+    const cspHeaderValue = res.headers.get('content-security-policy-report-only')
+    const nonce = cspHeaderValue?.match(/'nonce-(.*?)'/)?.[1]
+
+    const text = await res.text()
+    const nonceMatch = `nonce="${nonce}"`.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const elementsWithNonce = text.match(new RegExp(nonceMatch, 'g'))?.length ?? 0
+
+    expect(res).toBeDefined()
+    expect(res).toBeTruthy()
+    expect(nonce).toBeDefined()
+    expect(elementsWithNonce).toBe(expectedNonceElements)
+  })
 })

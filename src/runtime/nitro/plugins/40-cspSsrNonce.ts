@@ -78,7 +78,7 @@ export default defineNitroPlugin((nitroApp) => {
     if (
       !rules.enabled ||
       !rules.headers ||
-      !rules.headers.contentSecurityPolicy ||
+      !(rules.headers.contentSecurityPolicy || rules.headers.contentSecurityPolicyReportOnly) ||
       !rules.nonce
     ) {
       return

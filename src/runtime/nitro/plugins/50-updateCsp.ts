@@ -21,6 +21,14 @@ export default defineNitroPlugin((nitroApp) => {
         const styleHashes = event.context.security?.hashes?.style
         headers.contentSecurityPolicy = updateCspVariables(csp, nonce, scriptHashes, styleHashes)
       }
+
+      if (headers.contentSecurityPolicyReportOnly) {
+        const csp = headers.contentSecurityPolicyReportOnly
+        const nonce = event.context.security?.nonce
+        const scriptHashes = event.context.security?.hashes?.script
+        const styleHashes = event.context.security?.hashes?.style
+        headers.contentSecurityPolicyReportOnly = updateCspVariables(csp, nonce, scriptHashes, styleHashes)
+      }
     }
   })
 })
