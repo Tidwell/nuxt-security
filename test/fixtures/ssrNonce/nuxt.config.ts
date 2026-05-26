@@ -1,7 +1,5 @@
 export default defineNuxtConfig({
-  modules: [
-    '../../../src/module'
-  ],
+  modules: ['../../../src/module'],
 
   routeRules: {
     '/renew': {
@@ -29,6 +27,15 @@ export default defineNuxtConfig({
           "'nonce-{{nonce}}'",
           "'strict-dynamic'"
         ]
+      },
+      contentSecurityPolicyReportOnly: {
+        'style-src': ["'self'", "'nonce-{{nonce}}'"],
+        'script-src': [
+          // "'self'", test removing backwards compatibility for older browsers
+          "'nonce-{{nonce}}'",
+          "'strict-dynamic'"
+        ],
+        'report-to': ''
       }
     }
   }
