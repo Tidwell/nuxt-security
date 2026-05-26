@@ -39,7 +39,8 @@ export default defineNuxtConfig({
       csurf: false
     },
     '/api/csp-report': {
-     csurf: false
+      // browsers wont send CSRF headers with reports
+      csurf: false
     },
     '/preserve': {
       security: {
