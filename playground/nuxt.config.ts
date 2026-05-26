@@ -38,6 +38,9 @@ export default defineNuxtConfig({
     '/api/test-no-csrf': {
       csurf: false
     },
+    '/api/csp-report': {
+     csurf: false
+    },
     '/preserve': {
       security: {
         headers: {
@@ -63,8 +66,14 @@ export default defineNuxtConfig({
     '/cspSimultaniousReportOnly': {
       security: {
         headers: {
+          contentSecurityPolicy: {
+            // data: is used by vue dev tools
+            'img-src': ['https://img.shields.io', 'data:']
+          },
           contentSecurityPolicyReportOnly:  {
-            'frame-ancestors': ['https://www.example.com'],
+            // report-only does not have the shields.io intentionally to trigger a report
+            'img-src': ['data:'],
+            'report-uri': ['/api/csp-report'],
           }
         }
       }
