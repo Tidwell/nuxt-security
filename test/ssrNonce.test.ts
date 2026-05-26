@@ -9,8 +9,6 @@ describe('[nuxt-security] Nonce', async () => {
 
   const expectedNonceElements = 7
 
-  
-  
   it('injects `nonce` attribute in response', async () => {
     const res = await fetch('/')
 
